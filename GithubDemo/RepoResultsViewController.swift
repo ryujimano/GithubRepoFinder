@@ -10,7 +10,8 @@ import UIKit
 import MBProgressHUD
 
 // Main ViewController
-class RepoResultsViewController: UIViewController {
+class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    @IBOutlet weak var tableView: UITableView!
 
     var searchBar: UISearchBar!
     var searchSettings = GithubRepoSearchSettings()
@@ -30,6 +31,12 @@ class RepoResultsViewController: UIViewController {
 
         // Perform the first search when the view controller first loads
         doSearch()
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        tableView.estimatedRowHeight = 150
+        tableView.rowHeight = UITableViewAutomaticDimension
     }
 
     // Perform the search.
@@ -43,13 +50,39 @@ class RepoResultsViewController: UIViewController {
             // Print the returned repositories to the output window
             for repo in newRepos {
                 print(repo)
-            }   
+            }
+            self.repos = newRepos
 
+            self.tableView.reloadData()
+            
             MBProgressHUD.hide(for: self.view, animated: true)
             }, error: { (error) -> Void in
                 print(error)
         })
     }
+    
+    //MARK: UITableView
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return repos?.count ?? 0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "repoCell", for: indexPath) as! RepoTableViewCell
+        
+        let repo = repos[indexPath.row]
+        
+        cell.selectionStyle = .none
+        
+        cell.repoNameLabel.text = repo.name
+        cell.starsLabel.text = "\(repo.stars!)"
+        cell.forksLabel.text = "\(repo.forks!)"
+        cell.ownerLabel.text = repo.ownerHandle
+        cell.ownerView.setImageWith(URL(string: repo.ownerAvatarURL!)!)
+        cell.descriptionLabel.text = repo.repoDescription
+        
+        return cell
+    }
+    
 }
 
 // SearchBar methods
