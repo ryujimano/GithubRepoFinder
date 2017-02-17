@@ -17,9 +17,12 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
     var searchSettings = GithubRepoSearchSettings()
 
     var repos: [GithubRepo]!
+    var filteredRepos: [GithubRepo]!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        tableView.alpha = 0
 
         // Initialize the UISearchBar
         searchBar = UISearchBar()
@@ -52,10 +55,12 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
                 print(repo)
             }
             self.repos = newRepos
+            self.filteredRepos = self.repos
 
             self.tableView.reloadData()
             
             MBProgressHUD.hide(for: self.view, animated: true)
+            self.tableView.alpha = 1
             }, error: { (error) -> Void in
                 print(error)
         })
@@ -63,13 +68,13 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
     
     //MARK: UITableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return repos?.count ?? 0
+        return filteredRepos?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "repoCell", for: indexPath) as! RepoTableViewCell
         
-        let repo = repos[indexPath.row]
+        let repo = filteredRepos[indexPath.row]
         
         cell.selectionStyle = .none
         
@@ -83,6 +88,7 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
         return cell
     }
     
+    
 }
 
 // SearchBar methods
@@ -90,6 +96,7 @@ extension RepoResultsViewController: UISearchBarDelegate {
 
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         searchBar.setShowsCancelButton(true, animated: true)
+        
         return true
     }
 
@@ -107,5 +114,19 @@ extension RepoResultsViewController: UISearchBarDelegate {
         searchSettings.searchString = searchBar.text
         searchBar.resignFirstResponder()
         doSearch()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        //filter the repos array based on the user's search
+        let filtered = searchText.isEmpty ? repos : repos?.filter({ (repos: GithubRepo) -> Bool in
+            let repo = repos.name
+            return repo!.lowercased().range(of: searchText.lowercased()) != nil
+        })
+        
+        //assign the filtered array to filteredRepos
+        filteredRepos = filtered ?? []
+        
+        //reload data
+        tableView.reloadData()
     }
 }
