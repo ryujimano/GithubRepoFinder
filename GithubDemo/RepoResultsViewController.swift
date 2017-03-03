@@ -97,7 +97,17 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
     
     
     func didSaveSettings(settings: GithubRepoSearchSettings) {
-        
+        print("\(settings.minStars)")
+        self.searchSettings = settings
+        MBProgressHUD.showAdded(to: self.view, animated: true)
+        GithubRepo.fetchRepos(settings, successCallback: { (repos) in
+            self.repos = repos
+            self.filteredRepos = self.repos
+            self.tableView.reloadData()
+            MBProgressHUD.hide(for: self.view, animated: true)
+        }) { (error) in
+            print(error?.localizedDescription)
+        }
     }
     
     func didCancelSettings() {

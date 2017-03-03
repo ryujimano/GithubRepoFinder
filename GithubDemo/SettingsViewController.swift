@@ -25,7 +25,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        
+        stars = settings.minStars
+        starSlider.value = Float(stars) / 50000
+        starsNumberLabel.text = "\(stars)"
     }
 
     override func viewDidLoad() {
@@ -71,13 +73,21 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
 
     @IBAction func saveButtonTapped(_ sender: Any) {
+        settings.minStars = stars
         settingsDelegate?.didSaveSettings(settings: settings)
+        dismiss(animated: true, completion: nil)
     }
     
     @IBAction func cancelButtonTapped(_ sender: Any) {
         settingsDelegate?.didCancelSettings()
+        dismiss(animated: true, completion: nil)
     }
     
+    @IBAction func onSlider(_ sender: Any) {
+        let sender = sender as! UISlider
+        stars = Int(sender.value * 50000)
+        starsNumberLabel.text = "\(stars)"
+    }
     
     /*
     // MARK: - Navigation
