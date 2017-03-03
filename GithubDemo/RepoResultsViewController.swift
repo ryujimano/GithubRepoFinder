@@ -88,6 +88,10 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
         return cell
     }
     
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        searchBar.resignFirstResponder()
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let navController = segue.destination as! UINavigationController
         let vc = navController.topViewController as! SettingsViewController
@@ -97,7 +101,6 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
     
     
     func didSaveSettings(settings: GithubRepoSearchSettings) {
-        print("\(settings.minStars)")
         self.searchSettings = settings
         MBProgressHUD.showAdded(to: self.view, animated: true)
         GithubRepo.fetchRepos(settings, successCallback: { (repos) in
@@ -114,20 +117,21 @@ class RepoResultsViewController: UIViewController, UITableViewDelegate, UITableV
         
     }
     
-    
 }
 
 // SearchBar methods
 extension RepoResultsViewController: UISearchBarDelegate {
 
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
-        searchBar.setShowsCancelButton(true, animated: true)
+//        searchBar.setShowsCancelButton(true, animated: true)
+        searchBar.showsSearchResultsButton = true
         
         return true
     }
 
     func searchBarShouldEndEditing(_ searchBar: UISearchBar) -> Bool {
-        searchBar.setShowsCancelButton(false, animated: true)
+//        searchBar.setShowsCancelButton(false, animated: true)
+        searchBar.showsSearchResultsButton = false
         return true
     }
 
@@ -137,7 +141,13 @@ extension RepoResultsViewController: UISearchBarDelegate {
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchSettings.searchString = searchBar.text
+        if searchBar.text == "" {
+            searchSettings.searchString = nil
+        }
+        else {
+            searchSettings.searchString = searchBar.text
+        }
+        
         searchBar.resignFirstResponder()
         doSearch()
     }
